@@ -20,10 +20,27 @@ if(isset($_GET['add'])) {
         $query = "INSERT INTO section_tag (section_id, tag_id) VALUES ($1, $2)";
         $res = pg_query_params($acc, $query, array($id_sect, $id_tag));
     }
-    $response = 'Данные сохранены!';
-    ?>
-    <h1 style='top: 50%; left: 50%; font-size: 45px; position:absolute; transform: translate(-50%, -50%);'> <?=$response?></h1>
-    <?php
+    header("Location: http://localhost"); // Замените на URL, на который хотите перейти
     exit;
 }
+
+if(isset($_GET['remove'])) {
+    $id_tag = $_GET['id_discipline'];
+    $id_sect = $_GET['id_line'];
+
+    $acc = pg_connect($DB_CONNECTION_STRING);
+    if (!$acc) 
+    {
+        echo "Ошибка подключения к БД";
+        http_response_code(500);
+        exit;
+    }
+
+    $query = "DELETE FROM section_tag WHERE section_id = $1 AND tag_id = $2";
+    $res = pg_query_params($acc, $query, array($id_sect, $id_tag));
+
+    header("Location: http://localhost"); // Замените на URL, на который хотите перейти
+    exit;
+}
+
 ?>

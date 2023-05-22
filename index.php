@@ -3,8 +3,7 @@ include ('utils.php');
 printHeader('Кормушка', '', array('https://fonts.googleapis.com/css?family=Open+Sans', 'https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css', './style.css'));
 
 ?>
-
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
 <?php
 function accStart()
@@ -75,6 +74,112 @@ function accSubEnd()
 <?php
 }
 
+function createBtnAdd($i){
+    ?>
+    <button id="button<?=$i?>" data-target="#modal<?=$i?>" 
+            style="float: right; margin: 5px; cursor: pointer;"  
+            type="button" class="btn btn-primary btn-add">Добавить дисциплину
+    </button>
+    <?php
+}
+
+function createBtnShow($i){
+    ?>
+    <button id="button-show-<?=$i?>" data-target="#modal-show-<?=$i?>" 
+            style="float: right; margin: 5px; cursor: pointer;" 
+            type="button" class="btn btn-warning btn-show">Посмотреть дисциплины
+    </button>
+    <?php
+}
+
+function getDiscipline($i){
+    $DB_CONNECTION_STRING = "host=127.0.0.1 port=5432 dbname=acc user=postgres password=qazxsw"; 
+    $acc = pg_connect($DB_CONNECTION_STRING);
+    if (!$acc) 
+    {
+        echo "Ошибка подключения к БД";
+        http_response_code(500);
+        exit;
+    }
+    $result = pg_query($acc, "SELECT id, name FROM tag");
+    $array = pg_fetch_all($result);
+?>
+    <?php foreach($array as $id=>$value):?>
+    <button type="button" class="btn btn-outline-success disc" onclick="addDiscLineId(<?=$i?>, <?=$value['id']?>)">
+        <?= $value['name'] ?>
+    </button>
+<?php endforeach;
+}
+
+function createModalAdd($i){
+    ?>
+    <div class="modal" tabindex="-1" role="dialog" id="modal<?=$i?>">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Выберите дисциплину:</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span data-target="#modal<?=$i?>" 
+                            style="width: 25px; height: 25px; cursor: pointer; align-items:center;
+                                display: flex; justify-content: center;" class="close">&times;
+                        </span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <?php getDiscipline($i);?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+function removeDiscipline($i){
+    $DB_CONNECTION_STRING = "host=127.0.0.1 port=5432 dbname=acc user=postgres password=qazxsw"; 
+    $acc = pg_connect($DB_CONNECTION_STRING);
+    if (!$acc) 
+    {
+        echo "Ошибка подключения к БД";
+        http_response_code(500);
+        exit;
+    }
+    $result_tag_id = pg_query($acc, "SELECT tag_id FROM section_tag WHERE section_id = $i");
+    $array_tag_id = pg_fetch_all($result_tag_id);
+    ?>
+    <?php foreach($array_tag_id as $id=>$value):?>
+        <button type="button" class="btn btn-outline-success disc" onclick="removeDisc(<?=$i?>, <?=$value['tag_id']?>)">
+            <?php
+            $tag_id = $value['tag_id'];
+            $result_tag = pg_query($acc, "SELECT * FROM tag WHERE id = $tag_id");
+            $array_tag = pg_fetch_assoc($result_tag);
+            ?>
+            <?= $array_tag['name'] ?>
+        </button>
+    <?php endforeach;
+}
+
+function createModalShow($i){
+    ?>
+    <div class="modal modal-show-display" tabindex="-1" role="dialog" id="modal-show-<?=$i?>">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content modal-show-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Список дисциплин:</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span data-target="#modal-show-<?=$i?>" 
+                            style="width: 25px; height: 25px; cursor: pointer; align-items:center;
+                                display: flex; justify-content: center;" class="close">&times;
+                        </span>
+                    </button>
+                </div>
+                <div class="modal-body modal-show-discipline">
+                    <?php removeDiscipline($i);?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+}
 
 function accSub0($title = "", $body = array(),  $index_arr = array())
 {
@@ -86,168 +191,91 @@ function accSub0($title = "", $body = array(),  $index_arr = array())
     {
         $i = 0;
 ?>
-
-
-
-<div class="accordion-body__contents">
-    <table style="width: 100%;">
-        <?php foreach($body as $b): ?>
-            <tr>
-                <td><?= $b ?></td>
-                <td>
-                    <!-- Добавляем индекс в конец id и data-target -->
+        <div class="accordion-body__contents">
+            <table style="width: 100%;">
+                <?php foreach($body as $b): ?>
+                    <tr>
+                        <td><?= $b ?></td>
+                        <td>
+                            <?php createBtnAdd($index_arr[$i]);?>
+                            <?php createBtnShow($index_arr[$i]);?>
+                        </td>
+                    </tr>
                     
-                        <button id="button<?=$index_arr[$i]?>" data-target="#modal<?=$index_arr[$i]?>" 
-                                style="float: right; transition: background-color 1s;
-                                       border: none; color: white; margin: 5px; border-radius: 5px; cursor: pointer;" 
-                                type="button" class="btn-add">Добавить дисциплину
-                        </button>
-                    
-                    <button id="button-show-<?=$index_arr[$i]?>" data-target="#modal-show-<?=$index_arr[$i]?>" 
-                            style="float: right; transition: background-color 1s;
-                                   border: none; color: white; margin: 5px; border-radius: 5px; cursor: pointer;" 
-                            type="button" class="btn-show">Посмотреть дисциплины
-                    </button>
-                </td>
-            </tr>
-            <!-- Добавляем индекс в конец id и data-target и скрываем модальное окно с помощью класса modal-display -->
-            <div class="modal-display" id="modal<?=$index_arr[$i]?>" style="display: none; position: fixed; right: 30px; 
-                         z-index: 100; background-color: #acaeb8; width: 500px; height: 60%; bottom: 50px;
-                         border: grey 1px solid; border-radius: 5px; "> 
-                <div class="modal-content">
-                    <div style='display: flex; justify-content:space-between;'>
-                        <h4 style='font-size:25px; margin: 0 auto;'>Выберите дисциплину:</h4>
-                        <span data-target="#modal<?=$index_arr[$i]?>" 
-                            style="background-color: red; width: 25px; height: 25px; cursor: pointer; align-items:center; color: #a82c2c;
-                                   border-radius: 5px; float: right; font-weight: bold; font-size: 32px; display: flex; justify-content: center;" 
-                            class="close">&times;
-                        </span>
-                    </div>
-                    <div class="modal-discipline" style='overflow:auto; display: flex; flex-wrap: wrap; gap: 10px;
-                                                         padding: 10px;'>
-                        <?php
-                            $DB_CONNECTION_STRING = "host=127.0.0.1 port=5432 dbname=acc user=postgres password=qazxsw"; 
-    
-                            // подключение к БД
-                            $acc = pg_connect($DB_CONNECTION_STRING);
-                            if (!$acc) 
-                            {
-                                echo "Ошибка подключения к БД";
-                                http_response_code(500);
-                                exit;
-                            }
-                            $result = pg_query($acc, "SELECT id, name FROM tag");
-                            $array = pg_fetch_all($result);
-                        ?>
-                            <?php foreach($array as $id=>$value):?>
-                                <span style='background-color: #9ea82c; border: #424520 1px solid; cursor: pointer;  
-                                             border-radius: 5px; min-width: 30px; font-size: 20px; padding: 5px;'
-                                             onmouseover="this.style.backgroundColor = '#e7f73d'" 
-                                             onmouseout="this.style.backgroundColor = '#9ea82c'" class='disc' data-id='<?=$id?>' onclick="addDiscLineId(<?=$index_arr[$i]?>, <?=$value['id']?>)">
-                                             <?= $value['name'] ?> 
-                                </span>
-                            <?php endforeach;?>
-                    </div>
-                </div>
-            </div>
-            <!-- Добавляем индекс в конец id и data-target и скрываем модальное окно с помощью класса modal-display -->
-            <div class="modal-show-display" id="modal-show-<?=$index_arr[$i]?>" style="display: none; position: fixed; right: 30px; 
-                         z-index: 100; background-color: #acaeb8; width: 500px; height: 60%; bottom: 50px;
-                         border: grey 1px solid; border-radius: 5px;"> 
-                <div class="modal-show-content">
-                    <span data-target="#modal-show-<?=$index_arr[$i]?>" 
-                    style="background-color: red; width: 25px; height: 25px; cursor: pointer; align-items:center; color: #a82c2c;
-                           border-radius: 5px; float: right; font-weight: bold; font-size: 32px; display: flex; justify-content: center;" 
-                          class="close">&times;</span>
-                    <div class="modal-show-discipline">
-                        
-                    </div>
-                </div>
-            </div>
-        <?php $i += 1;?>
-        <?php endforeach;?>
-    </table>
-</div>
+                    <?php createModalAdd($index_arr[$i]);?>
+                    <?php createModalShow($index_arr[$i]);?>
 
-<script>
-    if (typeof buttons === "undefined"){
-        const buttons = document.querySelectorAll("[data-target]");
-        var tmp_btn = null;
+                <?php $i += 1;?>
+                <?php endforeach;?>
+            </table>
+        </div>
 
-        buttons.forEach(function(btn) {
-            btn.onclick = function() {
-                // Получаем модальное окно по data-target
-                const modal = document.querySelector(btn.getAttribute('data-target'));
-                modal.style.display = "block";
-                btn.classList.add('pressed');
-                tmp_btn = btn;
-                disableOtherButtons();
-            }
-        });
-        const disableOtherButtons= () => {
-            buttons.forEach(function(btn){
-                if (btn !== tmp_btn)
-                {
-                    btn.classList.add('disabled');
+        <script>
+            if (typeof buttons === "undefined"){
+                const buttons = document.querySelectorAll("[data-target]");
+                var tmp_btn = null;
+
+                buttons.forEach(function(btn) {
+                    btn.onclick = function() {
+                        const modal = document.querySelector(btn.getAttribute('data-target'));
+                        modal.style.display = "block";
+                        btn.classList.add('pressed');
+                        tmp_btn = btn;
+                        disableOtherButtons();
+                    }
+                });
+                const disableOtherButtons= () => {
+                    buttons.forEach(function(btn){
+                        if (btn !== tmp_btn)
+                        {
+                            btn.classList.add('disabled');
+                        }
+                    })
                 }
-            })
-        }
-        const close = document.querySelectorAll(".close");
+                const close = document.querySelectorAll(".close");
 
-        close.forEach(function(btn) {
-            btn.onclick = function() {
-                // Получаем модальное окно по data-target
-                const modal = document.querySelector(btn.getAttribute('data-target'));
-                modal.style.display = "none";
-                tmp_btn.classList.remove('pressed');
-                activeOtherButtons();
-            }
-        });
-        const activeOtherButtons= () => {
-            buttons.forEach(function(btn){
-                if (btn !== tmp_btn)
-                {
-                    btn.classList.remove('disabled');
+                close.forEach(function(btn) {
+                    btn.onclick = function() {
+                        const modal = document.querySelector(btn.getAttribute('data-target'));
+                        modal.style.display = "none";
+                        tmp_btn.classList.remove('pressed');
+                        activeOtherButtons();
+                    }
+                });
+                const activeOtherButtons= () => {
+                    buttons.forEach(function(btn){
+                        if (btn !== tmp_btn)
+                        {
+                            btn.classList.remove('disabled');
+                        }
+                    })
                 }
-            })
-        }
-    }
+            }
 
-    function addDiscLineId(line_id, discipline_id){
-        document.getElementById("input-discipline").value = discipline_id;
-        document.getElementById("input-line").value = line_id;
-        document.getElementById("form-addDiscipline").submit();
-    }
-</script>
+            function addDiscLineId(line_id, discipline_id){
+                document.getElementById("input-discipline").value = discipline_id;
+                document.getElementById("input-line").value = line_id;
+                document.getElementById("form-addDiscipline").submit();
+            }
 
-<style>
-    .btn-add.pressed {
-        background-color: #141414;
-    }
-    .btn-add{
-        background-color: #3F51B5;
-    }
-    .btn-add:hover{
-        background-color: #7584d5;
-    }
-    .btn-add.disabled{
-        pointer-events: none;
-        opacity: 0.5;
-    }
-    .btn-show.pressed {
-        background-color: #141414;
-    }
-    .btn-show{
-        background-color: #cde95d;
-    }
-    .btn-show:hover{
-        background-color: #cfff11;
-    }
-    .btn-show.disabled{
-        pointer-events: none;
-        opacity: 0.5;
-    }
-</style>
+            function removeDisc(line_id, discipline_id){
+                document.getElementById("remove-discipline").value = discipline_id;
+                document.getElementById("remove-line").value = line_id;
+                document.getElementById("form-removeDiscipline").submit();
+            }
+
+        </script>
+
+        <style>
+            .btn-add.disabled{
+                pointer-events: none;
+                opacity: 0.5;
+            }
+            .btn-show.disabled{
+                pointer-events: none;
+                opacity: 0.5;
+            }
+        </style>
 
 <?php
     }
@@ -284,9 +312,7 @@ function line($subj = '', $disc = array())
     return $row;
 }
 
-$DB_CONNECTION_STRING = "host=127.0.0.1 port=5432 dbname=acc user=postgres password=qazxsw"; 
-    
-// подключение к БД
+$DB_CONNECTION_STRING = "host=127.0.0.1 port=5432 dbname=acc user=postgres password=qazxsw";
 $acc = pg_connect($DB_CONNECTION_STRING);
 if (!$acc) 
 {
@@ -300,11 +326,19 @@ $array_header = pg_fetch_all($result_header);
 
 accStart();
 ?>
+
 <form method="GET" action="db.php" style="display: none;" id="form-addDiscipline">
     <input type="hidden" name="add" value="true"/>
     <input type="hidden" id="input-discipline" name="id_discipline" value=""/>
     <input type="hidden" id="input-line" name="id_line" value=""/>
 </form>
+
+<form method="REMOVE" action="db.php" style="display: none;" id="form-removeDiscipline">
+    <input type="hidden" name="remove" value="true"/>
+    <input type="hidden" id="remove-discipline" name="id_discipline" value=""/>
+    <input type="hidden" id="remove-line" name="id_line" value=""/>
+</form>
+
 <?php
 foreach ($array_header as $header) 
 {
@@ -348,7 +382,8 @@ accEnd();
 
 printFooter(); 
 ?>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script><script  src="./script.js"></script>  
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+  <script  src="./script.js"></script>  
 
 <!-- partial -->
 
