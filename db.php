@@ -20,7 +20,7 @@ if(isset($_GET['add'])) {
         $query = "INSERT INTO section_tag (section_id, tag_id) VALUES ($1, $2)";
         $res = pg_query_params($acc, $query, array($id_sect, $id_tag));
     }
-    header("Location: http://localhost"); // Замените на URL, на который хотите перейти
+    header("Location: http://localhost");
     exit;
 }
 
@@ -39,7 +39,7 @@ if(isset($_GET['remove'])) {
     $query = "DELETE FROM section_tag WHERE section_id = $1 AND tag_id = $2";
     $res = pg_query_params($acc, $query, array($id_sect, $id_tag));
 
-    header("Location: http://localhost"); // Замените на URL, на который хотите перейти
+    header("Location: http://localhost");
     exit;
 }
 
