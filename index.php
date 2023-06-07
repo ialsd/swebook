@@ -35,32 +35,12 @@ foreach ($array_header as $header)
     ?>
   <div class="accordion__item js-accordion-item">
     <div class="accordion-header js-accordion-header">
-        <div style="display: flex; justify-content:space-between; align-items: center;">
+        <div style="display: flex; justify-content:space-between; align-items: center;" onclick="updatePercentage(<?=$header['id']?>, 'btn-header')">
             <p style="margin: 0; padding: 0;"><?=$header['name']?></p>
-            <?php
-                $cnt = 0;
-                $cnt1 = 0;
-                $query_find = "SELECT * FROM section WHERE parent_id = $1";
-                $res_find = pg_query_params($acc, $query_find, array($header['id']));
-                $result_array = pg_fetch_all($res_find);
-                foreach($result_array as $i)
-                {
-                    $cnt1 += 1;
-                    if ($i['status_prc'] != 0) {
-                        $cnt += 1;
-                    }
-                }
-                if ($cnt1 != 0) {
-                    $res = intval(($cnt / $cnt1) * 100);
-                }
-                else {
-                    $res = 0;
-                }
-                $query = "UPDATE section SET status_prc = $1 WHERE id = $2";
-                $result = pg_query_params($acc, $query, array($res, $header['id']));
-            ?>
+           
             <button id="btn-header<?=$header['id']?>" style="float: right; margin: 5px;" 
-                    type="button" class="btn btn-warning btn-show"><?=$res?>%
+                    type="button" class="btn btn-warning btn-show">
+                <?=$header['status_prc']?>%
             </button>
         </div>
     </div> 
@@ -75,32 +55,10 @@ foreach ($array_header as $header)
             ?>
             <div class="accordion__item js-accordion-item w-100">
                 <div class="accordion-header js-accordion-header w-100">
-                    <div style="display: flex; justify-content:space-between; align-items: center;">
+                    <div style="display: flex; justify-content:space-between; align-items: center;"  onclick="updatePercentage(<?=$sub['id']?>, 'btn-sub')">
                         <p style="margin: 0; padding: 0;"><?=$sub['name']?></p>
-                        <?php
-                        $cnt = 0;
-                        $cnt1 = 0;
-                        $query_find = "SELECT * FROM section WHERE parent_id = $1";
-                        $res_find = pg_query_params($acc, $query_find, array($sub['id']));
-                        $result_array = pg_fetch_all($res_find);
-                        foreach($result_array as $i)
-                        {
-                            $cnt1 += 1;
-                            if ($i['status_prc'] != 0) {
-                                $cnt += 1;
-                            }
-                        }
-                        if ($cnt1 != 0) {
-                            $res = intval(($cnt / $cnt1) * 100);
-                        }
-                        else {
-                            $res = 0;
-                        }
-                        $query = "UPDATE section SET status_prc = $1 WHERE id = $2";
-                        $result = pg_query_params($acc, $query, array($res, $sub['id']));
-                        ?>
                         <button id="btn-sub<?=$sub['id']?>" style="float: right; margin: 5px;" 
-                                    type="button" class="btn btn-warning btn-show"><?=$res?>%
+                                    type="button" class="btn btn-warning btn-show"><?=$sub['status_prc']?>%
                         </button>
                     </div> 
                 </div>
@@ -129,14 +87,14 @@ foreach ($array_header as $header)
                 ?>
                 <div class="accordion__item js-accordion-item">
                     <div class="accordion-header accordion-subheader js-accordion-header">
-                        <div style="display: flex; justify-content:space-between; align-items: center;">
+                        <div style="display: flex; justify-content:space-between; align-items: center;"  onclick="updatePercentage(<?=$sub0['id']?>, 'btn-sub0')">
                             <p style="margin: 0; padding: 0;"><?=$sub0['name']?></p>
                             <?php
                             $cnt = 0;
                             $cnt1 = 0;
+                            $res = 0;
                             foreach($index_arr as $i)
                             {
-                                
                                 $cnt1 += 1;
                                 $query_find = "SELECT * FROM section_tag WHERE section_id = $1";
                                 $res_find = pg_query_params($acc, $query_find, array($i));
@@ -154,7 +112,7 @@ foreach ($array_header as $header)
                             $result = pg_query_params($acc, $query, array($res, $sub0['id']));
                             ?>
                             <button id="btn-sub0<?=$sub0['id']?>" style="float: right; margin: 5px;" 
-                                    type="button" class="btn btn-warning btn-show"><?=$res?>%
+                                    type="button" class="btn btn-warning btn-show"><?=$sub0['status_prc']?>%
                             </button>
                         </div>
                     </div>
@@ -301,6 +259,19 @@ foreach ($array_header as $header)
                                 document.getElementById("remove-line").value = line_id;
                                 document.getElementById("form-removeDiscipline").submit();
                             }
+                            function updatePercentage(headerId, className) {
+                                $.ajax({
+                                    url: 'update_percentage.php',
+                                    method: 'POST',
+                                    data: { headerId: headerId },
+                                    success: function (response) {
+                                    $(`#${className}` + headerId).text(response + '%');
+                                    },
+                                    error: function (xhr, status, error) {
+                                    console.log(error);
+                                    }
+                                });
+                                }
                         </script>
                         <style>
                             .btn-add.disabled{
