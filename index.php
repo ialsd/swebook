@@ -1,30 +1,23 @@
 <?php
+require_once("settings.php");
 include ('utils.php');
 printHeader('Кормушка', '', array('https://fonts.googleapis.com/css?family=Open+Sans', 'https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css', './style.css'));
 
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <?php
-$DB_CONNECTION_STRING = "host=localhost port=5432 dbname=acc user=postgres password=qazxsw";
-$acc = pg_connect($DB_CONNECTION_STRING);
-if (!$acc) 
-{
-    echo "Ошибка подключения к БД";
-    http_response_code(500);
-    exit;
-}
 $result_header = pg_query($acc, "SELECT * FROM section WHERE level = 1 order by id");
 $array_header = pg_fetch_all($result_header);
 ?>
 <div class="accordion js-accordion w-100">
 <?php
 ?>
-<form method="GET" action="settings.php" style="display: none;" id="form-addDiscipline">
+<form method="GET" action="update_percentage.php" style="display: none;" id="form-addDiscipline">
     <input type="hidden" name="add" value="true"/>
     <input type="hidden" id="input-discipline" name="id_discipline" value=""/>
     <input type="hidden" id="input-line" name="id_line" value=""/>
 </form>
-<form method="REMOVE" action="settings.php" style="display: none;" id="form-removeDiscipline">
+<form method="REMOVE" action="update_percentage.php" style="display: none;" id="form-removeDiscipline">
     <input type="hidden" name="remove" value="true"/>
     <input type="hidden" id="remove-discipline" name="id_discipline" value=""/>
     <input type="hidden" id="remove-line" name="id_line" value=""/>
@@ -233,8 +226,7 @@ foreach ($array_header as $header)
             $array_sub0 = pg_fetch_all($result_sub0);
             $i_sub0 = 0;
             $index_arr_sub0 = array();
-            foreach ($array_sub0 as $sub0)
-            {
+            foreach ($array_sub0 as $sub0) {
                 array_push($index_arr_sub0, $sub0['id']);
                 $sub0_id = $sub0['id'];
                 $result_sub1 = pg_query($acc, "SELECT * FROM section WHERE level = 4 AND parent_id = $sub0_id order by id");
@@ -506,7 +498,7 @@ foreach ($array_header as $header)
                             }
                             function updatePercentage(headerId, className) {
                                 $.ajax({
-                                    url: 'settings.php',
+                                    url: 'update_percentage.php',
                                     method: 'POST',
                                     data: { headerId: headerId },
                                     success: function (response) {

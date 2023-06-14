@@ -3,6 +3,7 @@
 //include_once('/auth/auth_ssh.class.php');
 // include_once('/var/vega.fcyb.mirea.ru/auth/auth_ssh.class.php');
 include_once('auth_ssh.class.php');
+require_once("settings.php");
 //krumo($_COOKIE['hash']);
 
 function printHeader($title = 'Вега - МИРЭА', $submenu = "", $styles = NULL, $scripts = NULL)
